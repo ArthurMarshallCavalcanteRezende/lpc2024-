@@ -3,6 +3,7 @@
 # 2024
 
 import pygame
+import random
 
 pygame.init()
 
@@ -52,6 +53,13 @@ ball_dy = 5
 score_1 = 0
 score_2 = 0
 
+# A.I random moveset
+ran = 0
+
+# A.I Error list
+
+ran_ai = [0, 20, 50, 0, 100, 150, 0, 35, 0]
+
 # game loop
 game_loop = True
 game_clock = pygame.time.Clock()
@@ -93,6 +101,7 @@ while game_loop:
             if player_1_y < ball_y + 25:
                 if player_1_y + 150 > ball_y:
                     ball_dx *= -1
+                    ran = random.choice(ran_ai)
                     bounce_sound_effect.play()
 
         # ball collision with the player 2 's paddle
@@ -100,6 +109,7 @@ while game_loop:
             if player_2_y < ball_y + 25:
                 if player_2_y + 150 > ball_y:
                     ball_dx *= -1
+                    ran = 0
                     bounce_sound_effect.play()
 
         # scoring points
@@ -143,7 +153,7 @@ while game_loop:
             player_1_y = 570
 
         # player 2 "Artificial Intelligence"
-        player_2_y = ball_y
+        player_2_y = ball_y + ran
         if player_2_y <= 0:
             player_2_y = 0
         elif player_2_y >= 570:
