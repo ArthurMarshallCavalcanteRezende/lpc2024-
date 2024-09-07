@@ -5,6 +5,27 @@
 import pygame
 import random
 
+
+def player_upmove(move_up, position):
+    # player 1 up movement
+    if move_up is True:
+        position -= 5
+        return position
+    else:
+        position += 0
+        return position
+
+
+def player_downmove(move_down, position):
+    # player 1 down movement
+    if move_down is True:
+        position += 5
+        return position
+    else:
+        position += 0
+        return position
+
+
 pygame.init()
 
 COLOR_BLACK = (0, 0, 0)
@@ -24,7 +45,7 @@ score_text_rect.center = (680, 50)
 
 # victory text
 victory_font = pygame.font.Font('assets/PressStart2P.ttf', 100)
-victory_text = victory_font .render('VICTORY', True, COLOR_WHITE, COLOR_BLACK)
+victory_text = victory_font.render('VICTORY', True, COLOR_WHITE, COLOR_BLACK)
 victory_text_rect = score_text.get_rect()
 victory_text_rect.center = (450, 350)
 
@@ -132,17 +153,9 @@ while game_loop:
         ball_x = ball_x + ball_dx
         ball_y = ball_y + ball_dy
 
-        # player 1 up movement
-        if player_1_move_up:
-            player_1_y -= 5
-        else:
-            player_1_y += 0
-
-        # player 1 down movement
-        if player_1_move_down:
-            player_1_y += 5
-        else:
-            player_1_y += 0
+        # player movements
+        player_1_y = player_upmove(player_1_move_up, player_1_y)
+        player_1_y = player_downmove(player_1_move_down, player_1_y)
 
         # player 1 collides with upper wall
         if player_1_y <= 0:
