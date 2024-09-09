@@ -6,6 +6,7 @@ import pygame
 import random
 
 
+# Player one up keymove function
 def player_upmove(move_up, position):
     # player 1 up movement
     if move_up is True:
@@ -16,6 +17,7 @@ def player_upmove(move_up, position):
         return position
 
 
+# Player one down keymove function
 def player_downmove(move_down, position):
     # player 1 down movement
     if move_down is True:
@@ -26,12 +28,50 @@ def player_downmove(move_down, position):
         return position
 
 
+# Score check function
+def score_check():
+    global ball_x, ball_y, ball_dx, ball_dy, score_1, score_2
+    if ball_x < -50:
+        score_2 += 1
+        ball_x, ball_y = 640, 360
+        ball_dx, ball_dy = random.choice([5, -5]), random.choice([5, -5])
+        sad_crowd.play()
+        scoring_sound_effect.play()
+    elif ball_x > 1320:
+        score_1 += 1
+        ball_x, ball_y = 640, 360
+        ball_dx, ball_dy = random.choice([5, -5]), random.choice([5, -5])
+        happy_crowd.play()
+        scoring_sound_effect.play()
+
+
+# Player 1 collision dynamic
+def collision_check(player_y, player, ai_check):
+    global ball_y, ball_dy, ball_dx, ran
+    if player_y < ball_y + 25 and player_y + 150 > ball_y:
+        impact_position = (ball_y + ball.get_height() / 2 - player_y) / player.get_height()
+        angle = (impact_position - 0.5) * 2
+        ball_dx = -ball_dx
+        ball_dy += angle * 3
+        ball_dy = min(max(ball_dy, -10), 10)
+        tense_crowd.play()
+        bounce_sound_effect.play()
+        if ai_check is False:
+            if score_2 > score_1:
+                ran = random.choice(hard_ran_ai)
+            else:
+                ran = random.choice(ran_ai)
+        else:
+            return True
+    return False
+
+
 pygame.init()
 
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 
-SCORE_MAX = 2
+SCORE_MAX = 3
 
 size = (1280, 720)
 screen = pygame.display.set_mode(size)
@@ -52,16 +92,19 @@ victory_text_rect.center = (450, 350)
 # sound effects
 bounce_sound_effect = pygame.mixer.Sound('assets/bounce.wav')
 scoring_sound_effect = pygame.mixer.Sound('assets/258020__kodack__arcade-bleep-sound.wav')
+tense_crowd = pygame.mixer.Sound('assets/pong_expectation.mpeg')
+sad_crowd = pygame.mixer.Sound('assets/sad_crowd.mpeg')
+happy_crowd = pygame.mixer.Sound('assets/happy_crowd.mpeg')
 
 # player 1
 player_1 = pygame.image.load("assets/player.png")
-player_1_y = 300
+player_1_y = 100
 player_1_move_up = False
 player_1_move_down = False
 
 # player 2 - robot
 player_2 = pygame.image.load("assets/player.png")
-player_2_y = 300
+player_2_y = 100
 
 # ball
 ball = pygame.image.load("assets/ball.png")
@@ -69,6 +112,12 @@ ball_x = 640
 ball_y = 360
 ball_dx = 5
 ball_dy = 5
+
+# crowd png
+crowd = pygame.image.load("assets/crowd.png")
+new_width = 400
+new_height = 200
+resized_crowd = pygame.transform.scale(crowd, (new_width, new_height))
 
 # score
 score_1 = 0
@@ -80,6 +129,7 @@ ran = 0
 # A.I Error list
 
 ran_ai = [0, 20, 50, 0, 100, 150, 0, 35, 0]
+hard_ran_ai = [0, 0, 0, 0, 0, 50, 50, 100, 60]
 
 # game loop
 game_loop = True
@@ -109,6 +159,9 @@ while game_loop:
         # clear screen
         screen.fill(COLOR_BLACK)
 
+        # Crowd on game
+        screen.blit(resized_crowd, (450, 550))
+
         # ball collision with the wall
         if ball_y > 700:
             ball_dy *= -1
@@ -118,36 +171,15 @@ while game_loop:
             bounce_sound_effect.play()
 
         # ball collision with the player 1 's paddle
-        if ball_x < 100:
-            if player_1_y < ball_y + 25:
-                if player_1_y + 150 > ball_y:
-                    ball_dx *= -1
-                    ran = random.choice(ran_ai)
-                    bounce_sound_effect.play()
+        if ball_x < 100 and collision_check(player_1_y, player_1, False):
+            ball_x = 100
 
         # ball collision with the player 2 's paddle
         if ball_x > 1160:
-            if player_2_y < ball_y + 25:
-                if player_2_y + 150 > ball_y:
-                    ball_dx *= -1
-                    ran = 0
-                    bounce_sound_effect.play()
+            collision_check(player_2_y, player_2, True)
 
         # scoring points
-        if ball_x < -50:
-            ball_x = 640
-            ball_y = 360
-            ball_dy *= -1
-            ball_dx *= -1
-            score_2 += 1
-            scoring_sound_effect.play()
-        elif ball_x > 1320:
-            ball_x = 640
-            ball_y = 360
-            ball_dy *= -1
-            ball_dx *= -1
-            score_1 += 1
-            scoring_sound_effect.play()
+        score_check()
 
         # ball movement
         ball_x = ball_x + ball_dx
